@@ -16,6 +16,7 @@ const Home = () => {
   const [email, setEmail] = useState("");
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showComplete, setShowComplete] = useState(false);
 
   useEffect(() => {
     setDimensions({ width: window.innerWidth, height: window.innerHeight });
@@ -37,6 +38,10 @@ const Home = () => {
     if (email.length > 0) {
       if (email.includes("@")) {
         const res = await insertProblems({ problems: filter, email: email });
+        if (res === true) {
+          setSubmitPress(false);
+          setShowComplete(true);
+        }
       } else {
         setShowError(true);
         setErrorMessage("Not a valid email");
@@ -86,6 +91,42 @@ const Home = () => {
         position: "relative",
       }}
     >
+      {showComplete && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            padding: 10,
+            backgroundColor: "#171717",
+            border: "1px solid #2e2e2e",
+            position: "absolute",
+            zIndex: 100,
+            borderRadius: 4,
+            width: 180,
+          }}
+        >
+          <h1 style={{ color: "white", marginBottom: 10 }}>
+            Thank your for submitting feedback. Return back to the homepage
+          </h1>
+          <button
+            onClick={() => {
+              setShowComplete(false);
+              setRender(0);
+            }}
+            style={{
+              backgroundColor: "#600164",
+              borderRadius: 4,
+              alignItems: "center",
+              justifyContent: "center",
+              display: "flex",
+              width: "100%",
+              height: 34,
+            }}
+          >
+            <h1 style={{ color: "white" }}>Return</h1>
+          </button>
+        </div>
+      )}
       {showError && (
         <div
           style={{
@@ -379,7 +420,7 @@ const Home = () => {
                 }}
               >
                 Our mission is identify and provide solutions to any
-                nuances/problems YOU may be having.
+                nuances/problems YOU run into at work.
               </p>
             </div>
             <button

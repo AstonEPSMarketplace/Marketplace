@@ -116,6 +116,7 @@ const insertProblems = async ({
       console.log(data, error);
     }
   }
+  return true;
 };
 
 export {
