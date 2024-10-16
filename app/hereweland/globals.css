@@ -35,13 +35,3 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
-
-input:focus {
-  border-color: #ccc; /* Keep the same border color on focus */
-  outline: none; /* Ensure there's no focus outline */
-}
-
-textarea:focus {
-  border-color: #ccc; /* Keep the same border color on focus */
-  outline: none; /* Ensure there's no focus outline */
-}
