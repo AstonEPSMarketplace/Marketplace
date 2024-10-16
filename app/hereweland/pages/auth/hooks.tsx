@@ -1,6 +1,4 @@
-import supabase from "@/services/supabase";
 import axios from "axios";
-import GetCookie from "../../actions/getCookie";
 import SetCookie from "../../actions/setCookie";
 
 const signup = async ({
@@ -23,7 +21,7 @@ const signin = async ({ email }: { email: string }) => {
     if (split[1] === "aston.ac.uk") {
       console.log("length > 2");
       const local = "http://localhost:9900/api/signin";
-      const xTernal = "";
+      // const xTernal = "";
       const response = await axios.post(local, {
         id: split[0],
       });

@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useGlobal } from "../../context/global";
-import GetCookie from "../../actions/getCookie";
-import { attempt, individualAttempt } from "../../hooks/calls";
+import { individualAttempt } from "../../hooks/calls";
 import Popup from "../../components/popup";
 
 const Posts = ({ array }) => {
@@ -21,8 +20,6 @@ const Posts = ({ array }) => {
     client_id: 0,
   });
   const [refresh, setRefresh] = useState(false);
-  const [displayError, setDisplayError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
   const [attempted, setAttempted] = useState([]);
   const { closePopup, refreshAttempt } = global;
 
@@ -92,6 +89,7 @@ const Posts = ({ array }) => {
         <Popup
           post={expandedPost}
           attempted={attempted.find((a) => a.post_id === expandedPost.id)}
+          border={false}
         />
       )}
       <div

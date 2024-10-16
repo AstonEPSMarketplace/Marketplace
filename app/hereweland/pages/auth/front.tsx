@@ -9,9 +9,6 @@ const Front = () => {
   const [render, setRender] = useState("one");
   const [email, setEmail] = useState("");
   const [option, setOption] = useState(false);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [userData, setUserData] = useState(null);
   const [response, setResponse] = useState(null);
   const [displayError, setDisplayError] = useState(false);
   const { global, setGlobal } = useGlobal();
@@ -45,6 +42,18 @@ const Front = () => {
 
   const updateEmail = (event) => {
     setEmail(event.target.value);
+  };
+
+  const renderContent = () => {
+    if (render === "one") {
+      return renderStepOne();
+    } else if (render === "two") {
+      return renderStepTwo();
+    } else if (render === "student") {
+      return renderStudentLogin();
+    } else {
+      return renderStaffLogin();
+    }
   };
 
   const renderStepTwo = () => {
@@ -158,7 +167,11 @@ const Front = () => {
         />
         <button
           onClick={() => {
-            option ? callSignin() : callSignup({ access: false });
+            if (option) {
+              callSignin();
+            } else {
+              callSignup({ access: false });
+            }
           }}
           style={{
             position: "absolute",
@@ -332,13 +345,7 @@ const Front = () => {
           </button>
         </div>
       )}
-      {render === "one"
-        ? renderStepOne()
-        : render === "two"
-        ? renderStepTwo()
-        : render === "student"
-        ? renderStudentLogin()
-        : renderStaffLogin()}
+      {renderContent()}
     </div>
   );
 };

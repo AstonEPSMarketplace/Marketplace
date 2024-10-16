@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import GetCookie from "../actions/getCookie";
 import { attempt, deleteAttempt } from "../hooks/calls";
 import { useGlobal } from "../context/global";
 import Dropzone from "react-dropzone";
 import { File } from "../svgs/svg";
 import supabase from "@/services/supabase";
-import { individualAttempt } from "../hooks/calls";
+import { FileWithPath } from "react-dropzone";
 
 type post = {
   id: string;
@@ -19,19 +19,6 @@ type post = {
   client_id: number;
 };
 
-type Attempt = {
-  id: string;
-  createdAt: string;
-  clientId: string;
-  post_id: string;
-  completed: boolean;
-  filename: string;
-};
-
-type AttempArray = {
-  array: Attempt[];
-};
-
 const Popup = ({
   post,
   attempted,
@@ -41,29 +28,10 @@ const Popup = ({
   attempted: boolean;
   border: boolean;
 }) => {
-  const [refresh, setRefresh] = useState(false);
   const { global, setGlobal } = useGlobal();
-  const [file, setFile] = useState(null);
-  const [uploadStatus, setUploadStatus] = useState("");
-  const [uploadedFileURL, setUploadedFileURL] = useState("");
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [file, setFile] = useState<FileWithPath>();
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [showError, setShowError] = useState(false);
-  const [attemps, setAttempts] = useState([]);
-
-  useEffect(() => {
-    const func = async () => {
-      await fetchAttemps();
-    };
-
-    func();
-  }, []);
-
-  const fetchAttemps = async () => {
-    const res = await individualAttempt();
-    if (res?.error === null) {
-      setAttempts(res?.data);
-    }
-  };
 
   const handleRemovePost = async () => {
     await deleteAttempt({ post_id: post.id });
@@ -75,26 +43,24 @@ const Popup = ({
     const valId = cookie?.value || "";
     const res = await attempt({ c_id: valId, p_id: id });
     if (res.data.data === null && res.data.error === null) {
-      setRefresh(true);
     } else {
       return "Unexpected error";
     }
   };
 
   const handleSubmitFile = async () => {
-    if (file !== null) {
+    if (file !== null && file !== undefined) {
       const id = await GetCookie();
       console.log(id);
       const fileName = `${post.id}$${Date.now()}$${id?.value}`;
       const filePath = `${fileName}`;
-      setUploadStatus("Uploading...");
 
-      const { data: user, error: userError } = await supabase
+      const { data: user } = await supabase
         .from("users")
         .select("*")
         .eq("client_id", id?.value);
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from("submissions")
         .upload(filePath, file);
 
@@ -106,24 +72,21 @@ const Popup = ({
         "https://ptgxoqishsatvhumlmzb.supabase.co/storage/v1/object/public/submissions/" +
         fileName;
 
-      console.log(user[0].id);
-
-      const { data: uploadFile, error: uploadError } = await supabase
-        .from("submissions")
-        .insert([
-          { post_id: post.id, client_id: user[0].id, file_url: fileURL },
-        ]);
-
-      console.log({ uploadFile, uploadError });
-
-      setUploadStatus("Complete");
+      if (user) {
+        await supabase
+          .from("submissions")
+          .insert([
+            { post_id: post.id, client_id: user[0].id, file_url: fileURL },
+          ]);
+      }
     } else {
       setErrorMessage("You must select a file");
       setShowError(true);
     }
   };
 
-  const handleOnDrop = async (acceptedFiles) => {
+  const handleOnDrop = async (acceptedFiles: FileWithPath[]) => {
+    console.log("accepted Files", acceptedFiles[0]);
     if (acceptedFiles && acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       setFile(file);
@@ -264,7 +227,9 @@ const Popup = ({
                   >
                     {file !== null && <File />}
                     <h3 style={{ color: "grey", marginLeft: 10 }}>
-                      {file !== null ? file.name : "Select file"}
+                      {file !== null && file !== undefined
+                        ? file.name
+                        : "Select file"}
                     </h3>
                   </div>
                 </div>
@@ -292,9 +257,11 @@ const Popup = ({
           {attempted && <div style={{ width: 20 }} />}
           <button
             onClick={() => {
-              attempted
-                ? handleSubmitFile()
-                : handleAttemptPress({ id: post.id });
+              if (attempted) {
+                handleSubmitFile();
+              } else {
+                handleAttemptPress({ id: post.id });
+              }
             }}
             style={{
               width: attempted ? "70%" : "100%",

@@ -1,14 +1,8 @@
 "use client";
-import {
-  individualAttempt,
-  fetchSubscribed,
-  fetchMySubmissions,
-} from "../../hooks/calls";
-import React, { useState, useEffect, use } from "react";
-import Dropzone from "react-dropzone";
-import supabase from "@/services/supabase";
-import GetCookie from "../../actions/getCookie";
-import { File } from "../../svgs/svg";
+import { fetchSubscribed, fetchMySubmissions } from "../../hooks/calls";
+import React, { useState, useEffect } from "react";
+// import Dropzone from "react-dropzone";
+// import { File } from "../../svgs/svg";
 import Popup from "../../components/popup";
 import { useGlobal } from "../../context/global";
 
@@ -27,16 +21,11 @@ const Subscribed = ({ pPosts }) => {
     client: "",
     client_id: 0,
   });
-  const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
-  const [uploadedFileURL, setUploadedFileURL] = useState("");
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [showError, setShowError] = useState(false);
   const [render, setRender] = useState(0);
   const { global, setGlobal } = useGlobal();
   const { closePopup, refreshAttempt } = global;
   const [submissions, setSubmissions] = useState([]);
-  const [submissionPost, setSubmissionPost] = useState([]);
 
   useEffect(() => {
     const func = async () => {
@@ -76,42 +65,31 @@ const Subscribed = ({ pPosts }) => {
   // }, [posts]);
 
   useEffect(() => {
-    if (render === 0) {
-      let filtered = [];
-      for (let i = 0; i < posts.length; i++) {
-        const diff = submissions.filter((s) => s.post_id === posts[i].id);
-        console.log(diff);
-        if (diff.length === 0) {
-          filtered.push(posts[i]);
-        }
-      }
+    const splitIntoArrays = (items) => {
       const tempArrays = [[], [], [], []];
-      filtered.forEach((item, index) => {
+      items.forEach((item, index) => {
         const arrayIndex = index % 4;
         tempArrays[arrayIndex].push(item);
       });
       setSplitArrays(tempArrays);
-    } else {
-      console.log(pPosts);
-      let newFiltered = [];
-      for (let i = 0; i < submissions.length; i++) {
-        const diff = pPosts.filter((p) => p.id === submissions[i].post_id);
-        if (diff.length > 0) {
-          newFiltered.push(diff[0]);
-        }
-      }
-      const tempArrays = [[], [], [], []];
-      newFiltered.forEach((item, index) => {
-        const arrayIndex = index % 4;
-        tempArrays[arrayIndex].push(item);
-      });
-      setSplitArrays(tempArrays);
-    }
-  }, [render, posts]);
+    };
 
-  useEffect(() => {
-    console.log(uploadedFileURL);
-  }, [uploadedFileURL]);
+    if (render === 0) {
+      const filtered = posts.filter((post) => {
+        const diff = submissions.filter((s) => s.post_id === post.id);
+        return diff.length === 0;
+      });
+      splitIntoArrays(filtered);
+    } else {
+      const newFiltered = submissions
+        .map((submission) => {
+          const diff = pPosts.filter((p) => p.id === submission.post_id);
+          return diff.length > 0 ? diff[0] : null;
+        })
+        .filter((item) => item !== null);
+      splitIntoArrays(newFiltered);
+    }
+  }, [render, posts, submissions, pPosts]);
 
   const fetchAttempted = async () => {
     const res = await fetchSubscribed();
@@ -130,40 +108,6 @@ const Subscribed = ({ pPosts }) => {
   const handleExpandPress = (post) => {
     setShowPopup(true);
     setExpandedPost(post);
-  };
-
-  const handleOnDrop = async (acceptedFiles) => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setFile(file);
-    }
-  };
-
-  const handleSubmitFile = async () => {
-    if (file !== null) {
-      const id = await GetCookie();
-      const fileName = `${expandedPost.id}$${Date.now()}$${id?.value}`;
-      const filePath = `${fileName}`;
-      setUploadStatus("Uploading...");
-
-      const { data, error } = await supabase.storage
-        .from("submissions")
-        .upload(filePath, file);
-
-      if (error) {
-        throw error;
-      }
-
-      const { publicURL } = supabase.storage
-        .from("submissions")
-        .getPublicUrl(filePath);
-
-      setUploadedFileURL(publicURL);
-      setUploadStatus("Complete");
-    } else {
-      setErrorMessage("You must select a file");
-      setShowError(true);
-    }
   };
 
   return (

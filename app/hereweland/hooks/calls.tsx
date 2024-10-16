@@ -2,7 +2,11 @@
 import supabase from "../../../services/supabase";
 import axios from "axios";
 import GetCookie from "../actions/getCookie";
-import { error } from "console";
+
+type problem = {
+  problem: string;
+  id: string;
+};
 
 const fetchPosts = async () => {
   const { data, error } = await supabase.from("posts").select("*");
@@ -11,10 +15,10 @@ const fetchPosts = async () => {
   }
 };
 
-const attempt = async ({ c_id, p_id }: { c_id: String; p_id: String }) => {
+const attempt = async ({ c_id, p_id }: { c_id: string; p_id: string }) => {
   console.log(c_id, p_id);
   const local = "http://localhost:9900/api/attempt";
-  const xTernal = "";
+  // const xTernal = "";
   const response = await axios.post(local, {
     client_id: c_id,
     post_id: p_id,
@@ -29,16 +33,17 @@ const individualAttempt = async () => {
       .from("users")
       .select("*")
       .eq("client_id", cookie.value);
-    console.log(user[0]);
     if (userError === null) {
-      const { data: activity, error } = await supabase
+      const { data: activity } = await supabase
         .from("activity")
         .select("*")
         .eq("client_id", user[0].id);
-      if (activity?.length > 0) {
-        return { data: activity, error: null };
-      } else {
-        return { data: null, error: "User has not subscribed to any posts" };
+      if (activity !== null) {
+        if (activity?.length > 0) {
+          return { data: activity, error: null };
+        } else {
+          return { data: null, error: "User has not subscribed to any posts" };
+        }
       }
     } else {
       return { data: null, error: "User cookie is not valid" };
@@ -47,16 +52,18 @@ const individualAttempt = async () => {
 };
 
 const fetchSubscribed = async () => {
-  let subscribed = [];
-  const { data, error } = await individualAttempt();
+  const subscribed = [];
+  // "@ts-expect-error"
+  const result = await individualAttempt();
+  const { data, error } = result;
   if (error === null) {
-    const { data: post, error: postError } = await supabase
-      .from("posts")
-      .select("*");
-    for (let i = 0; i < data.length; i++) {
-      for (let x = 0; x < post?.length; x++) {
-        if (post[x].id === data[i].post_id) {
-          subscribed.push(post[x]);
+    const { data: post } = await supabase.from("posts").select("*");
+    if (post !== null) {
+      for (let i = 0; i < data.length; i++) {
+        for (let x = 0; x < post?.length; x++) {
+          if (post[x].id === data[i].post_id) {
+            subscribed.push(post[x]);
+          }
         }
       }
     }
@@ -86,14 +93,14 @@ const fetchMySubmissions = async () => {
   }
 };
 
-const deleteAttempt = async ({ post_id }: { post_id: String }) => {
+const deleteAttempt = async ({ post_id }: { post_id: string }) => {
   const id = (await GetCookie())?.value;
-  const { data: user, error: userError } = await supabase
+  const { data: user } = await supabase
     .from("users")
     .select("*")
     .eq("client_id", id);
-  if (user?.length > 0) {
-    const { error } = await supabase
+  if (user !== null) {
+    await supabase
       .from("activity")
       .delete()
       .eq("post_id", post_id)
@@ -105,15 +112,17 @@ const insertProblems = async ({
   problems,
   email,
 }: {
-  problems: [];
+  problems: problem[];
   email: string;
 }) => {
   if (problems.length > 0) {
     for (let i = 0; i < problems.length; i++) {
-      const { data, error } = await supabase
-        .from("problems")
-        .insert([{ problem: problems[i].problem, client_email: email }]);
-      console.log(data, error);
+      if (problems !== null && problems !== undefined) {
+        const { data, error } = await supabase
+          .from("problems")
+          .insert([{ problem: problems[i].problem, client_email: email }]);
+        console.log(data, error);
+      }
     }
   }
   return true;

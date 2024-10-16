@@ -4,7 +4,6 @@ import Header from "./pages/header/mainHeader";
 import MarketPlace from "./pages/posts/mainMarketPlace";
 import { useEffect, useState } from "react";
 import GetCookie from "./actions/getCookie";
-import DeleteCookie from "./actions/deleteCookie";
 import { useGlobal } from "./context/global";
 
 //I will have a file imported here, and on the useEffect will check the users session.
@@ -12,8 +11,7 @@ import { useGlobal } from "./context/global";
 
 const Home = () => {
   const [cookie, setCookie] = useState(false);
-  const [render, setRender] = useState(null);
-  const { global, setGlobal } = useGlobal();
+  const { global } = useGlobal();
   const { isCookie } = global;
 
   useEffect(() => {

@@ -1,12 +1,7 @@
 "use client";
-import Link from "next/link";
+// import Link from "next/link";
 import { useState, useEffect } from "react";
 import { insertProblems } from "./hereweland/hooks/calls";
-
-type problem = {
-  problem: string;
-  id: string;
-};
 
 const Home = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -20,7 +15,7 @@ const Home = () => {
 
   useEffect(() => {
     setDimensions({ width: window.innerWidth, height: window.innerHeight });
-  }, [window.innerWidth]);
+  }, []);
 
   const generateUUID = () => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(

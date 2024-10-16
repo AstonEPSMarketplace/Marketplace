@@ -7,7 +7,6 @@ import { fetchPosts } from "../../hooks/calls";
 
 const MarketPlace = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [locRender, setLocRender] = useState(0);
   const [posts, setPosts] = useState([]);
   const { global, setGlobal } = useGlobal();
   const { render, refreshAttempt } = global;
@@ -63,12 +62,6 @@ const MarketPlace = () => {
             flexDirection: "row",
             alignItems: "center",
           }}
-          onMouseEnter={() => {
-            setLocRender(0);
-          }}
-          onMouseLeave={() => {
-            setLocRender(-1);
-          }}
         >
           <div
             style={{
@@ -90,12 +83,6 @@ const MarketPlace = () => {
             flexDirection: "row",
             alignItems: "center",
             marginBottom: 40,
-          }}
-          onMouseEnter={() => {
-            setLocRender(1);
-          }}
-          onMouseLeave={() => {
-            setLocRender(-1);
           }}
         >
           <div
